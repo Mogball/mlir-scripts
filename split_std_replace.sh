@@ -88,13 +88,15 @@ declare -A ops_mlir=(
   [math.fma]=fmaf
 )
 
+FILES=~/std_files
+
 g3_lookup_cpp() {
   ALL="__xd__"
   for i in "${!ops_cpp[@]}"; do
       j=${ops_cpp[$i]}
       ALL="$ALL OR $j"
   done
-  cs --l --f $1 $ALL | sed 's/files\/head\/depot/cloud\/jeffniu\/XD3/g' > ~/files
+  cs --l --f $1 $ALL | sed 's/files\/head\/depot/cloud\/jeffniu\/XD3/g' > $FILES
 }
 
 g3_lookup_mlir() {
@@ -104,18 +106,18 @@ g3_lookup_mlir() {
       ALL="$ALL OR \" = $j \""
   done
   ALL="$ALL OR \" = constant\""
-  cs --l --f $1 $ALL | sed 's/files\/head\/depot/cloud\/jeffniu\/XD3/g' > ~/files
+  cs --l --f $1 $ALL | sed 's/files\/head\/depot/cloud\/jeffniu\/XD3/g' > $FILES
 }
 
 g3_replace_cpp() {
   for i in "${!ops_cpp[@]}"; do
       j=${ops_cpp[$i]}
       lookup="(?<!::)\b$j\b"
-      cat ~/files | xargs -n 16 -P 36 perl -i -pe "s/$lookup/$i/g"
+      cat $FILES | xargs -n 16 -P 36 perl -i -pe "s/$lookup/$i/g"
       lookup="(?<!::)\b$jAdaptor\b"
-      cat ~/files | xargs -n 16 -P 36 perl -i -pe "s/$lookup/$iAdaptor/g"
+      cat $FILES | xargs -n 16 -P 36 perl -i -pe "s/$lookup/$iAdaptor/g"
       lookup="mlir::\b$j\b"
-      cat ~/files | xargs -n 16 -P 36 perl -i -pe "s/$lookup/mlir::$i/g"
+      cat $FILES | xargs -n 16 -P 36 perl -i -pe "s/$lookup/mlir::$i/g"
   done
 }
 
@@ -123,11 +125,11 @@ g3_replace_mlir() {
   for i in "${!ops_mlir[@]}"; do
       j=${ops_mlir[$i]}
       lookup=" = \b$j\b "
-      cat ~/files | xargs -n 16 -P 36 perl -i -pe "s/$lookup/ = $i /g"
+      cat $FILES | xargs -n 16 -P 36 perl -i -pe "s/$lookup/ = $i /g"
       lookup=" = \b$j\b$"
-      cat ~/files | xargs -n 16 -P 36 perl -i -pe "s/$lookup/ = $i/g"
+      cat $FILES | xargs -n 16 -P 36 perl -i -pe "s/$lookup/ = $i/g"
   done
-  cat ~/files | xargs -n 16 -P 36 perl -i -pe 's/ = constant (?![\[\"u@])/ = arith.constant /g'
+  cat $FILES | xargs -n 16 -P 36 perl -i -pe 's/ = constant (?![\[\"u@])/ = arith.constant /g'
 }
 
 replace_all_cpp() {
